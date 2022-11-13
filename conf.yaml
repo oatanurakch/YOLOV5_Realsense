@@ -1,0 +1,9 @@
+#path
+train: E:/Paper/Yolov5_WeedDetection/dataset/agri_data/train # train images
+val: E:/Paper/Yolov5_WeedDetection/dataset/agri_data/validation #val images
+
+# number of classes
+nc: 2
+
+# class names
+names: ['Crop', 'Weed']
