@@ -114,6 +114,26 @@ class Annotator:
                             thickness=tf,
                             lineType=cv2.LINE_AA)
 
+    # Center point in object detection
+    def centerpointbbox(self, box, label='', color=(128, 128, 128), txt_color=(255, 255, 255)):
+        x_point, y_point = int((box[0] + box[2]) / 2), int((box[1] + box[3]) / 2)
+        cv2.circle(self.im, (x_point, y_point), 3, color, -1)
+
+    # Write FPS in images
+    def fpsshow(self, fps):
+        cv2.putText(self.im, "FPS: {:.2f}".format(fps), 
+                    (10, 30), 0, 
+                    self.lw / 5, 
+                    (255, 255, 255), 
+                    thickness = 1, 
+                    lineType = cv2.LINE_AA)
+
+    # Write guildline in object detection
+    def writeGuildline(self, box, color=(128, 128, 128), txt_color=(255, 255, 255)):
+        x_point, y_point = int((box[0] + box[2]) / 2), int((box[1] + box[3]) / 2)
+        st_point, end_point = (int(self.im.shape[1] / 2), int(self.im.shape[0])), (x_point, y_point)
+        cv2.line(self.im, st_point, end_point, color = color, thickness = 2)
+
     def masks(self, masks, colors, im_gpu=None, alpha=0.5):
         """Plot masks at once.
         Args:
