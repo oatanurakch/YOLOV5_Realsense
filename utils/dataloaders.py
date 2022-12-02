@@ -428,7 +428,7 @@ class LoadStreamCSI:
         self.stride = stride
         self.vid_stride = vid_stride  # video frame-rate stride
         if sources == 'csi':
-            pipeline = "nvarguscamerasrc sensor-id=0 !" "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1 ! " "nvvidconv flip-method=2 ! " "video/x-raw, width=(int)960, height=(int)540, format=(string)BGRx ! " "videoconvert ! " "video/x-raw, format=(string)BGR ! appsink"
+            pipeline = "nvarguscamerasrc sensor-id=0 !" "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1 ! " "nvvidconv flip-method=2 ! " "video/x-raw, width=(int)640, height=(int)640, format=(string)BGRx ! " "videoconvert ! " "video/x-raw, format=(string)BGR ! appsink"
         sources = ['300']
         n = len(sources)
         self.sources = [clean_str(x) for x in sources]
