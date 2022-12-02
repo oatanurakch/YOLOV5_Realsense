@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from models.common import DetectMultiBackend
-from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams, LoadStreams_Realsense
+from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams, LoadStreams_Realsense, LoadStreamsCSI
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
 from utils.plots import Annotator, colors, save_one_box
@@ -50,6 +50,7 @@ def run(
         vid_stride=1,  # video frame-rate stride
 ):
     source = str(source)
+    csi = source == 'csi' or False
     realsense = source == 'rs' or False
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -74,6 +75,10 @@ def run(
     if realsense:
         view_img = check_imshow(warn=True)
         dataset = LoadStreams_Realsense(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
+        bs = len(dataset)
+    elif csi:
+        view_img = check_imshow(warn=True)
+        dataset = LoadStreamsCSI(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
         bs = len(dataset)
     elif webcam:
         view_img = check_imshow(warn=True)
