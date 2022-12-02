@@ -187,88 +187,88 @@ class _RepeatSampler:
         while True:
             yield from iter(self.sampler)
 
-# class LoadStreams_Realsense:
-#     def __init__(self, sources, img_size = 640, stride = 32, auto = True, transforms=None, vid_stride=1):
-#         torch.backends.cudnn.benchmark = True  # faster for fixed-size inference
-#         self.mode = 'stream'
-#         self.img_size = img_size
-#         self.stride = stride
-#         self.vid_stride = vid_stride  # video frame-rate stride
-#         # Config realsense source
-#         if sources == 'rs':
-#             sources = ['100']
-#             self.pipeline = rs.pipeline()
-#             self.config = rs.config()
-#             self.pipeline_wrapper = rs.pipeline_wrapper(self.pipeline)
-#             self.pipeline_profile = self.config.resolve(self.pipeline_wrapper)
-#             self.device_rs = self.pipeline_profile.get_device()
-#             self.device_product_line = str(self.device_rs.get_info(rs.camera_info.product_line))
+class LoadStreams_Realsense:
+    def __init__(self, sources, img_size = 640, stride = 32, auto = True, transforms=None, vid_stride=1):
+        torch.backends.cudnn.benchmark = True  # faster for fixed-size inference
+        self.mode = 'stream'
+        self.img_size = img_size
+        self.stride = stride
+        self.vid_stride = vid_stride  # video frame-rate stride
+        # Config realsense source
+        if sources == 'rs':
+            sources = ['100']
+            self.pipeline = rs.pipeline()
+            self.config = rs.config()
+            self.pipeline_wrapper = rs.pipeline_wrapper(self.pipeline)
+            self.pipeline_profile = self.config.resolve(self.pipeline_wrapper)
+            self.device_rs = self.pipeline_profile.get_device()
+            self.device_product_line = str(self.device_rs.get_info(rs.camera_info.product_line))
 
-#             found_rgb = False
-#             for s in self.device_rs.sensors:
-#                 if s.get_info(rs.camera_info.name) == 'RGB Camera':
-#                     found_rgb = True
-#                     break
-#             if not found_rgb:
-#                 print("The demo requires Depth camera with Color sensor")
-#                 exit(0)
+            found_rgb = False
+            for s in self.device_rs.sensors:
+                if s.get_info(rs.camera_info.name) == 'RGB Camera':
+                    found_rgb = True
+                    break
+            if not found_rgb:
+                print("The demo requires Depth camera with Color sensor")
+                exit(0)
             
-#             self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+            self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 
-#             if self.device_product_line == 'L500':
-#                 self.config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 30)
-#             else:
-#                 self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+            if self.device_product_line == 'L500':
+                self.config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 30)
+            else:
+                self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
-#             self.pipeline.start(self.config)
-#         n = len(sources)
-#         self.sources = [clean_str(x) for x in sources]
-#         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
-#         for i, s in enumerate(self.sources):
-#             self.frames = self.pipeline.wait_for_frames()
-#             color_frame = self.frames.get_color_frame()
-#             while not color_frame:
-#                 continue
-#             color_image = np.asanyarray(color_frame.get_data())
-#             self.imgs[i] = color_image
-#             self.threads[i] = Thread(target=self.update, args=([i]), daemon=True)
-#             self.threads[i].start()
+            self.pipeline.start(self.config)
+        n = len(sources)
+        self.sources = [clean_str(x) for x in sources]
+        self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
+        for i, s in enumerate(self.sources):
+            self.frames = self.pipeline.wait_for_frames()
+            color_frame = self.frames.get_color_frame()
+            while not color_frame:
+                continue
+            color_image = np.asanyarray(color_frame.get_data())
+            self.imgs[i] = color_image
+            self.threads[i] = Thread(target=self.update, args=([i]), daemon=True)
+            self.threads[i].start()
 
-#         s = np.stack([letterbox(x, img_size, stride=stride, auto=auto)[0].shape for x in self.imgs])
-#         self.rect = np.unique(s, axis=0).shape[0] == 1  # rect inference if all shapes equal
-#         self.auto = auto and self.rect
-#         self.transforms = transforms  # optional
-#         if not self.rect:
-#             LOGGER.warning('WARNING ⚠️ Stream shapes differ. For optimal performance supply similarly-shaped streams.')
+        s = np.stack([letterbox(x, img_size, stride=stride, auto=auto)[0].shape for x in self.imgs])
+        self.rect = np.unique(s, axis=0).shape[0] == 1  # rect inference if all shapes equal
+        self.auto = auto and self.rect
+        self.transforms = transforms  # optional
+        if not self.rect:
+            LOGGER.warning('WARNING ⚠️ Stream shapes differ. For optimal performance supply similarly-shaped streams.')
         
 
-#     def update(self, i):
-#         while True:
-#             frames = self.pipeline.wait_for_frames()
-#             color_frame = frames.get_color_frame()
-#             if not color_frame:
-#                 continue
-#             color_image = np.asanyarray(color_frame.get_data())
-#             self.imgs[i] = color_image
-#             time.sleep(0.0)
+    def update(self, i):
+        while True:
+            frames = self.pipeline.wait_for_frames()
+            color_frame = frames.get_color_frame()
+            if not color_frame:
+                continue
+            color_image = np.asanyarray(color_frame.get_data())
+            self.imgs[i] = color_image
+            time.sleep(0.0)
 
-#     def __iter__(self):
-#         self.count = -1
-#         return self
+    def __iter__(self):
+        self.count = -1
+        return self
 
-#     def __next__(self):
-#         self.count += 1
-#         if not all(x.is_alive() for x in self.threads) or cv2.waitKey(1) == ord('q'):
-#             cv2.destroyAllWindows()
-#             raise StopIteration
-#         im0 = self.imgs.copy()
-#         im = np.stack([letterbox(x, 640, self.stride, auto = self.auto)[0] for x in im0])  # resize
-#         im = im[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW
-#         im = np.ascontiguousarray(im)  # contiguous
-#         return self.sources, im, im0, None, ''
+    def __next__(self):
+        self.count += 1
+        if not all(x.is_alive() for x in self.threads) or cv2.waitKey(1) == ord('q'):
+            cv2.destroyAllWindows()
+            raise StopIteration
+        im0 = self.imgs.copy()
+        im = np.stack([letterbox(x, 640, self.stride, auto = self.auto)[0] for x in im0])  # resize
+        im = im[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW
+        im = np.ascontiguousarray(im)  # contiguous
+        return self.sources, im, im0, None, ''
     
-#     def __len__(self):
-#         return len(self.sources)
+    def __len__(self):
+        return len(self.sources)
 
 class LoadScreenshots:
     # YOLOv5 screenshot dataloader, i.e. `python detect.py --source "screen 0 100 100 512 256"`
@@ -418,81 +418,6 @@ class LoadImages:
 
     def __len__(self):
         return self.nf  # number of files
-
-
-class LoadStreamCSI:
-    def __init__(self, sources = 'csi', img_size = 640, stride = 32, auto = True, transforms=None, vid_stride=1):
-        torch.backends.cudnn.benchmark = True  # faster for fixed-size inference
-        self.mode = 'stream'
-        self.img_size = img_size
-        self.stride = stride
-        self.vid_stride = vid_stride  # video frame-rate stride
-        if sources == 'csi':
-            pipeline = "nvarguscamerasrc sensor-id=0 !" "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1 ! " "nvvidconv flip-method=2 ! " "video/x-raw, width=(int)640, height=(int)640, format=(string)BGRx ! " "videoconvert ! " "video/x-raw, format=(string)BGR ! appsink"
-        sources = ['300']
-        n = len(sources)
-        self.sources = [clean_str(x) for x in sources]
-        self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
-        for i, s in enumerate(sources):
-            st = f'{i + 1}/{n}: {s}... '
-            cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
-            assert cap.isOpened(), f'{st}Failed to open {s}'
-            w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-            fps = cap.get(cv2.CAP_PROP_FPS)  # warning: may return 0 or nan
-            self.frames[i] = max(int(cap.get(cv2.CAP_PROP_FRAME_COUNT)), 0) or float('inf')  # infinite stream fallback
-            self.fps[i] = max((fps if math.isfinite(fps) else 0) % 100, 0) or 30  # 30 FPS fallback
-
-            _, self.imgs[i] = cap.read()  # guarantee first frame
-            self.threads[i] = Thread(target=self.update, args=([i, cap, s]), daemon=True)
-            LOGGER.info(f"{st} Success ({self.frames[i]} frames {w}x{h} at {self.fps[i]:.2f} FPS)")
-            self.threads[i].start()
-        LOGGER.info('')
-        s = np.stack([letterbox(x, img_size, stride=stride, auto=auto)[0].shape for x in self.imgs])
-        self.rect = np.unique(s, axis=0).shape[0] == 1  # rect inference if all shapes equal
-        self.auto = auto and self.rect
-        self.transforms = transforms  # optional
-        if not self.rect:
-            LOGGER.warning('WARNING ⚠️ Stream shapes differ. For optimal performance supply similarly-shaped streams.')
-
-    def update(self, i, cap, stream):
-        # Read stream `i` frames in daemon thread
-        n, f = 0, self.frames[i]  # frame number, frame array
-        while cap.isOpened() and n < f:
-            n += 1
-            cap.grab()  # .read() = .grab() followed by .retrieve()
-            if n % self.vid_stride == 0:
-                success, im = cap.retrieve()
-                if success:
-                    self.imgs[i] = im
-                else:
-                    LOGGER.warning('WARNING ⚠️ Video stream unresponsive, please check your IP camera connection.')
-                    self.imgs[i] = np.zeros_like(self.imgs[i])
-                    cap.open(stream)  # re-open stream if signal was lost
-            time.sleep(0.0)  # wait time
-
-    def __iter__(self):
-        self.count = -1
-        return self
-
-    def __next__(self):
-        self.count += 1
-        if not all(x.is_alive() for x in self.threads) or cv2.waitKey(1) == ord('q'):  # q to quit
-            cv2.destroyAllWindows()
-            raise StopIteration
-
-        im0 = self.imgs.copy()
-        if self.transforms:
-            im = np.stack([self.transforms(x) for x in im0])  # transforms
-        else:
-            im = np.stack([letterbox(x, self.img_size, stride=self.stride, auto=self.auto)[0] for x in im0])  # resize
-            im = im[..., ::-1].transpose((0, 3, 1, 2))  # BGR to RGB, BHWC to BCHW
-            im = np.ascontiguousarray(im)  # contiguous
-
-        return self.sources, im, im0, None, ''
-
-    def __len__(self):
-        return len(self.sources)  # 1E12 frames = 32 streams at 30 FPS for 30 years
 
 class LoadStreams:
     # YOLOv5 streamloader, i.e. `python detect.py --source 'rtsp://example.com/media.mp4'  # RTSP, RTMP, HTTP streams`
