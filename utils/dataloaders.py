@@ -428,13 +428,14 @@ class LoadStreamCSI:
         self.stride = stride
         self.vid_stride = vid_stride  # video frame-rate stride
         if sources == 'csi':
-            sources = "nvarguscamerasrc sensor-id=0 !" "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1 ! " "nvvidconv flip-method=2 ! " "video/x-raw, width=(int)960, height=(int)540, format=(string)BGRx ! " "videoconvert ! " "video/x-raw, format=(string)BGR ! appsink"
+            pipeline = "nvarguscamerasrc sensor-id=0 !" "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1 ! " "nvvidconv flip-method=2 ! " "video/x-raw, width=(int)960, height=(int)540, format=(string)BGRx ! " "videoconvert ! " "video/x-raw, format=(string)BGR ! appsink"
+        sources = ['300']
         n = len(sources)
         self.sources = [clean_str(x) for x in sources]
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
         for i, s in enumerate(sources):
             st = f'{i + 1}/{n}: {s}... '
-            cap = cv2.VideoCapture(s, cv2.CAP_GSTREAMER)
+            cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
             assert cap.isOpened(), f'{st}Failed to open {s}'
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
