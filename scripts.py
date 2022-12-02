@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from models.common import DetectMultiBackend
-from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams, LoadStreams_Realsense, LoadStreamsCSI
+from utils.dataloaders import IMG_FORMATS, VID_FORMATS, LoadImages, LoadScreenshots, LoadStreams, LoadStreamCSI
 from utils.general import (LOGGER, Profile, check_file, check_img_size, check_imshow, check_requirements, colorstr, cv2,
                            increment_path, non_max_suppression, print_args, scale_boxes, strip_optimizer, xyxy2xywh)
 from utils.plots import Annotator, colors, save_one_box
@@ -74,11 +74,11 @@ def run(
     bs = 1  # batch_size
     if realsense:
         view_img = check_imshow(warn=True)
-        dataset = LoadStreams_Realsense(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
+        # dataset = LoadStreams_Realsense(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
         bs = len(dataset)
     elif csi:
         view_img = check_imshow(warn=True)
-        dataset = LoadStreamsCSI(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
+        dataset = LoadStreamCSI(source, img_size=imgsz, stride=stride, auto=pt, vid_stride=vid_stride)
         bs = len(dataset)
     elif webcam:
         view_img = check_imshow(warn=True)
