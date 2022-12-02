@@ -434,7 +434,7 @@ class LoadStreamCSI:
         self.imgs, self.fps, self.frames, self.threads = [None] * n, [0] * n, [0] * n, [None] * n
         for i, s in enumerate(sources):
             st = f'{i + 1}/{n}: {s}... '
-            cap = cv2.VideoCapture(s)
+            cap = cv2.VideoCapture(s, cv2.CAP_GSTREAMER)
             assert cap.isOpened(), f'{st}Failed to open {s}'
             w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
